@@ -50,38 +50,38 @@ contract Voting is Ownable {
         _;
     }
 
-    function addWhitelist(address _voter) public onlyOwner {
+    function addWhitelist(address _voter) external onlyOwner {
         require(whitelist[_voter].isRegistered == false, "This address is already whitelisted");
         whitelist[_voter].isRegistered = true;
         emit VoterRegistered(_voter);
     }
 
-    function startProposalRegistration() public onlyOwner checkRightWorkflow(WorkflowStatus.RegisteringVoters) {
+    function startProposalRegistration() external onlyOwner checkRightWorkflow(WorkflowStatus.RegisteringVoters) {
         currentWorkflowStatus = WorkflowStatus.ProposalsRegistrationStarted;
         emit WorkflowStatusChange(WorkflowStatus.RegisteringVoters, WorkflowStatus.ProposalsRegistrationStarted);
     }
 
-    function endProposalRegistration() public onlyOwner checkRightWorkflow(WorkflowStatus.ProposalsRegistrationStarted) {
+    function endProposalRegistration() external onlyOwner checkRightWorkflow(WorkflowStatus.ProposalsRegistrationStarted) {
         currentWorkflowStatus = WorkflowStatus.ProposalsRegistrationEnded;
         emit WorkflowStatusChange(WorkflowStatus.ProposalsRegistrationStarted, WorkflowStatus.ProposalsRegistrationEnded);
     }
 
-    function startVotingSession() public onlyOwner checkRightWorkflow(WorkflowStatus.ProposalsRegistrationEnded) {
+    function startVotingSession() external onlyOwner checkRightWorkflow(WorkflowStatus.ProposalsRegistrationEnded) {
         currentWorkflowStatus = WorkflowStatus.VotingSessionStarted;
         emit WorkflowStatusChange(WorkflowStatus.ProposalsRegistrationEnded, WorkflowStatus.VotingSessionStarted);
     }
 
-    function endVotingSession() public onlyOwner checkRightWorkflow(WorkflowStatus.VotingSessionStarted) {
+    function endVotingSession() external onlyOwner checkRightWorkflow(WorkflowStatus.VotingSessionStarted) {
         currentWorkflowStatus = WorkflowStatus.VotingSessionEnded;
         emit WorkflowStatusChange(WorkflowStatus.VotingSessionStarted, WorkflowStatus.VotingSessionEnded);
     }
 
-    function propose(string memory _proposal) public isWhitelisted checkRightWorkflow(WorkflowStatus.ProposalsRegistrationStarted) {
+    function propose(string memory _proposal) external isWhitelisted checkRightWorkflow(WorkflowStatus.ProposalsRegistrationStarted) {
         proposals.push(Proposal({description: _proposal, voteCount: 0}));
         emit ProposalRegistered(proposals.length -1);
     }
 
-    function vote(uint _voteProposalId) public isWhitelisted checkRightWorkflow(WorkflowStatus.VotingSessionStarted) {
+    function vote(uint _voteProposalId) external isWhitelisted checkRightWorkflow(WorkflowStatus.VotingSessionStarted) {
         require(whitelist[msg.sender].hasVoted == false, "You already voted!");
         require(_voteProposalId < proposals.length, "You tried to vote for a proposal who doesn't exist");
         proposals[_voteProposalId].voteCount += 1;
@@ -90,7 +90,7 @@ contract Voting is Ownable {
         emit Voted(msg.sender, _voteProposalId);
     }
 
-    function countVote() public onlyOwner checkRightWorkflow(WorkflowStatus.VotingSessionEnded) {
+    function countVote() external onlyOwner checkRightWorkflow(WorkflowStatus.VotingSessionEnded) {
         uint mostVotedProposalId;
         uint mostVote;
 

@@ -37,7 +37,7 @@ contract Voting is Ownable {
     WorkflowStatus public currentWorkflowStatus;
     Proposal[] public proposals;
 
-    mapping(address => Voter) whitelist;
+    mapping(address => Voter) public whitelist;
 
     modifier checkRightWorkflow(WorkflowStatus _workflowStatus) {
         require(currentWorkflowStatus == _workflowStatus, "You're not following the right Workflow");
@@ -83,5 +83,14 @@ contract Voting is Ownable {
     function propose(string memory _proposal) public isWhitelisted checkRightWorkflow(WorkflowStatus.ProposalsRegistrationStarted) {
         proposals.push(Proposal({description: _proposal, voteCount: 0}));
         emit ProposalRegistered(proposals.length -1);
+    }
+
+    function vote(uint _voteProposalId) public isWhitelisted checkRightWorkflow(WorkflowStatus.VotingSessionStarted) {
+        require(whitelist[msg.sender].hasVoted == false, "You already voted!");
+        require(_voteProposalId < proposals.length, "You tried to vote for a proposal who doesn't exist");
+        proposals[_voteProposalId].voteCount += 1;
+        whitelist[msg.sender].hasVoted = true;
+        whitelist[msg.sender].votedProposalId = _voteProposalId;
+        emit Voted(msg.sender, _voteProposalId);
     }
 }

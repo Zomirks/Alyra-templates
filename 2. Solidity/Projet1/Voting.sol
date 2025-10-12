@@ -35,6 +35,7 @@ contract Voting is Ownable {
     event Voted (address voter, uint proposalId);
 
     WorkflowStatus public currentWorkflowStatus;
+    Proposal[] public proposals;
 
     mapping(address => Voter) whitelist;
 
@@ -79,4 +80,8 @@ contract Voting is Ownable {
         emit WorkflowStatusChange(WorkflowStatus.VotingSessionEnded, WorkflowStatus.VotesTallied);
     }
 
+    function propose(string memory _proposal) public isWhitelisted checkRightWorkflow(WorkflowStatus.ProposalsRegistrationStarted) {
+        proposals.push(Proposal({description: _proposal, voteCount: 0}));
+        emit ProposalRegistered(proposals.length -1);
+    }
 }

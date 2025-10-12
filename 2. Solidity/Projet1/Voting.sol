@@ -25,7 +25,7 @@ contract Voting is Ownable {
         VotesTallied
     }
 
-    constructor() Ownable(msg.sender){
+    constructor() Ownable(msg.sender) {
         whitelist[msg.sender].isRegistered = true;
     }
 
@@ -56,22 +56,22 @@ contract Voting is Ownable {
         emit VoterRegistered(_voter);
     }
 
-    function startProposalRegistration() public checkRightWorkflow(WorkflowStatus.RegisteringVoters) {
+    function startProposalRegistration() public onlyOwner checkRightWorkflow(WorkflowStatus.RegisteringVoters) {
         currentWorkflowStatus = WorkflowStatus.ProposalsRegistrationStarted;
         emit WorkflowStatusChange(WorkflowStatus.RegisteringVoters, WorkflowStatus.ProposalsRegistrationStarted);
     }
 
-    function endProposalRegistration() public checkRightWorkflow(WorkflowStatus.ProposalsRegistrationStarted) {
+    function endProposalRegistration() public onlyOwner checkRightWorkflow(WorkflowStatus.ProposalsRegistrationStarted) {
         currentWorkflowStatus = WorkflowStatus.ProposalsRegistrationEnded;
         emit WorkflowStatusChange(WorkflowStatus.ProposalsRegistrationStarted, WorkflowStatus.ProposalsRegistrationEnded);
     }
 
-    function startVotingSession() public checkRightWorkflow(WorkflowStatus.ProposalsRegistrationEnded) {
+    function startVotingSession() public onlyOwner checkRightWorkflow(WorkflowStatus.ProposalsRegistrationEnded) {
         currentWorkflowStatus = WorkflowStatus.VotingSessionStarted;
         emit WorkflowStatusChange(WorkflowStatus.ProposalsRegistrationEnded, WorkflowStatus.VotingSessionStarted);
     }
 
-    function endVotingSession() public checkRightWorkflow(WorkflowStatus.VotingSessionStarted) {
+    function endVotingSession() public onlyOwner checkRightWorkflow(WorkflowStatus.VotingSessionStarted) {
         currentWorkflowStatus = WorkflowStatus.VotingSessionEnded;
         emit WorkflowStatusChange(WorkflowStatus.VotingSessionStarted, WorkflowStatus.VotingSessionEnded);
     }

@@ -31,4 +31,11 @@ contract Voting is Ownable {
     event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
     event ProposalRegistered(uint proposalId);
     event Voted (address voter, uint proposalId);
+
+    mapping(address => Voter) Whitelist;
+
+    function addWhitelist(address _address) public onlyOwner {
+        require(Whitelist[_address].isRegistered == false, "This address is already whitelisted");
+        Whitelist[_address].isRegistered = true;
+    }
 }

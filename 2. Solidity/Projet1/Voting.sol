@@ -25,7 +25,9 @@ contract Voting is Ownable {
         VotesTallied
     }
 
-    constructor() Ownable(msg.sender){  }
+    constructor() Ownable(msg.sender){
+        whitelist[msg.sender].isRegistered = true;
+    }
 
     event VoterRegistered(address voterAddress);
     event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
@@ -34,16 +36,21 @@ contract Voting is Ownable {
 
     WorkflowStatus public currentWorkflowStatus;
 
-    mapping(address => Voter) Whitelist;
+    mapping(address => Voter) whitelist;
 
     modifier checkRightWorkflow(WorkflowStatus _workflowStatus) {
         require(currentWorkflowStatus == _workflowStatus, "You're not following the right Workflow");
         _;
     }
 
+    modifier isWhitelisted() {
+        require(whitelist[msg.sender].isRegistered == true, "You're not Whitelisted");
+        _;
+    }
+
     function addWhitelist(address _voter) public onlyOwner {
-        require(Whitelist[_voter].isRegistered == false, "This address is already whitelisted");
-        Whitelist[_voter].isRegistered = true;
+        require(whitelist[_voter].isRegistered == false, "This address is already whitelisted");
+        whitelist[_voter].isRegistered = true;
         emit VoterRegistered(_voter);
     }
 
@@ -71,4 +78,5 @@ contract Voting is Ownable {
         currentWorkflowStatus = WorkflowStatus.VotesTallied;
         emit WorkflowStatusChange(WorkflowStatus.VotingSessionEnded, WorkflowStatus.VotesTallied);
     }
+
 }

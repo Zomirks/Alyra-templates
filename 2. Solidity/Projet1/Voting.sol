@@ -34,6 +34,7 @@ contract Voting is Ownable {
     event ProposalRegistered(uint proposalId);
     event Voted (address voter, uint proposalId);
 
+    uint public winningProposalId;
     WorkflowStatus public currentWorkflowStatus;
     Proposal[] public proposals;
 
@@ -75,11 +76,6 @@ contract Voting is Ownable {
         emit WorkflowStatusChange(WorkflowStatus.VotingSessionStarted, WorkflowStatus.VotingSessionEnded);
     }
 
-    function votesTallied() public checkRightWorkflow(WorkflowStatus.VotingSessionEnded) {
-        currentWorkflowStatus = WorkflowStatus.VotesTallied;
-        emit WorkflowStatusChange(WorkflowStatus.VotingSessionEnded, WorkflowStatus.VotesTallied);
-    }
-
     function propose(string memory _proposal) public isWhitelisted checkRightWorkflow(WorkflowStatus.ProposalsRegistrationStarted) {
         proposals.push(Proposal({description: _proposal, voteCount: 0}));
         emit ProposalRegistered(proposals.length -1);
@@ -92,5 +88,21 @@ contract Voting is Ownable {
         whitelist[msg.sender].hasVoted = true;
         whitelist[msg.sender].votedProposalId = _voteProposalId;
         emit Voted(msg.sender, _voteProposalId);
+    }
+
+    function countVote() public onlyOwner checkRightWorkflow(WorkflowStatus.VotingSessionEnded) {
+        uint mostVotedProposalId;
+        uint mostVote;
+
+        for(uint i=0; i < proposals.length; i++) {
+            if(proposals[i].voteCount > mostVote) {
+                mostVote = proposals[i].voteCount;
+                mostVotedProposalId = i;
+            }
+        }
+
+        currentWorkflowStatus = WorkflowStatus.VotesTallied;
+        emit WorkflowStatusChange(WorkflowStatus.VotingSessionEnded, WorkflowStatus.VotesTallied);
+        winningProposalId = mostVotedProposalId;
     }
 }

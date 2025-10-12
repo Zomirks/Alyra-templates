@@ -32,10 +32,43 @@ contract Voting is Ownable {
     event ProposalRegistered(uint proposalId);
     event Voted (address voter, uint proposalId);
 
+    WorkflowStatus public currentWorkflowStatus;
+
     mapping(address => Voter) Whitelist;
 
-    function addWhitelist(address _address) public onlyOwner {
-        require(Whitelist[_address].isRegistered == false, "This address is already whitelisted");
-        Whitelist[_address].isRegistered = true;
+    modifier checkRightWorkflow(WorkflowStatus _workflowStatus) {
+        require(currentWorkflowStatus == _workflowStatus, "You're not following the right Workflow");
+        _;
+    }
+
+    function addWhitelist(address _voter) public onlyOwner {
+        require(Whitelist[_voter].isRegistered == false, "This address is already whitelisted");
+        Whitelist[_voter].isRegistered = true;
+        emit VoterRegistered(_voter);
+    }
+
+    function startProposalRegistration() public checkRightWorkflow(WorkflowStatus.RegisteringVoters) {
+        currentWorkflowStatus = WorkflowStatus.ProposalsRegistrationStarted;
+        emit WorkflowStatusChange(WorkflowStatus.RegisteringVoters, WorkflowStatus.ProposalsRegistrationStarted);
+    }
+
+    function endProposalRegistration() public checkRightWorkflow(WorkflowStatus.ProposalsRegistrationStarted) {
+        currentWorkflowStatus = WorkflowStatus.ProposalsRegistrationEnded;
+        emit WorkflowStatusChange(WorkflowStatus.ProposalsRegistrationStarted, WorkflowStatus.ProposalsRegistrationEnded);
+    }
+
+    function startVotingSession() public checkRightWorkflow(WorkflowStatus.ProposalsRegistrationEnded) {
+        currentWorkflowStatus = WorkflowStatus.VotingSessionStarted;
+        emit WorkflowStatusChange(WorkflowStatus.ProposalsRegistrationEnded, WorkflowStatus.VotingSessionStarted);
+    }
+
+    function endVotingSession() public checkRightWorkflow(WorkflowStatus.VotingSessionStarted) {
+        currentWorkflowStatus = WorkflowStatus.VotingSessionEnded;
+        emit WorkflowStatusChange(WorkflowStatus.VotingSessionStarted, WorkflowStatus.VotingSessionEnded);
+    }
+
+    function votesTallied() public checkRightWorkflow(WorkflowStatus.VotingSessionEnded) {
+        currentWorkflowStatus = WorkflowStatus.VotesTallied;
+        emit WorkflowStatusChange(WorkflowStatus.VotingSessionEnded, WorkflowStatus.VotesTallied);
     }
 }

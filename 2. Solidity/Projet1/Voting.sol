@@ -25,23 +25,21 @@ contract Voting is Ownable {
         VotesTallied
     }
 
-    constructor() Ownable(msg.sender) {
-        whitelist[msg.sender].isRegistered = true;
-    }
+    constructor() Ownable(msg.sender) {}
 
     event VoterRegistered(address voterAddress);
     event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
     event ProposalRegistered(uint proposalId);
     event Voted (address voter, uint proposalId);
 
-    uint public winningProposalId;
+    uint private winningProposalId;
     WorkflowStatus public currentWorkflowStatus;
     Proposal[] public proposals;
 
     mapping(address => Voter) public whitelist;
 
     modifier checkRightWorkflow(WorkflowStatus _workflowStatus) {
-        require(currentWorkflowStatus == _workflowStatus, "You're not following the right Workflow");
+        require(currentWorkflowStatus == _workflowStatus, "This action isn't available in your current workflow state");
         _;
     }
 
@@ -50,7 +48,7 @@ contract Voting is Ownable {
         _;
     }
 
-    function addWhitelist(address _voter) external onlyOwner {
+    function addWhitelist(address _voter) external onlyOwner checkRightWorkflow(WorkflowStatus.RegisteringVoters) {
         require(whitelist[_voter].isRegistered == false, "This address is already whitelisted");
         whitelist[_voter].isRegistered = true;
         emit VoterRegistered(_voter);
@@ -104,5 +102,10 @@ contract Voting is Ownable {
         currentWorkflowStatus = WorkflowStatus.VotesTallied;
         emit WorkflowStatusChange(WorkflowStatus.VotingSessionEnded, WorkflowStatus.VotesTallied);
         winningProposalId = mostVotedProposalId;
+    }
+
+    function getWinner() external view returns(uint) {
+        require(currentWorkflowStatus == WorkflowStatus.VotesTallied, "The votes have not yet been counted");
+        return winningProposalId;
     }
 }

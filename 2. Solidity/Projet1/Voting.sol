@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.8.30;
+pragma solidity 0.8.28;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -89,14 +89,14 @@ contract Voting is Ownable {
 
     // Whitelisted Address
     // Add a proposal only during the "ProposalsRegistrationStarted" phase
-    function propose(string memory _proposal) external isWhitelisted checkRightWorkflow(WorkflowStatus.ProposalsRegistrationStarted) {
+    function addProposal(string memory _proposal) external isWhitelisted checkRightWorkflow(WorkflowStatus.ProposalsRegistrationStarted) {
         proposals.push(Proposal({description: _proposal, voteCount: 0}));
         emit ProposalRegistered(proposals.length -1);
     }
 
     // Whitelisted Address
     // Vote for a proposal only during the "VotingSessionStarted" phase
-    function vote(uint _voteProposalId) external isWhitelisted checkRightWorkflow(WorkflowStatus.VotingSessionStarted) {
+    function addVote(uint _voteProposalId) external isWhitelisted checkRightWorkflow(WorkflowStatus.VotingSessionStarted) {
         require(whitelist[msg.sender].hasVoted == false, "You already voted!");
         require(_voteProposalId < proposals.length, "You tried to vote for a proposal who doesn't exist");
         proposals[_voteProposalId].voteCount += 1;

@@ -25,7 +25,9 @@ contract Voting is Ownable {
         VotesTallied
     }
 
-    constructor() Ownable(msg.sender) {}
+    constructor(address _addr) payable Ownable(msg.sender) {
+        addWhitelist(_addr);
+    }
 
     event VoterRegistered(address voterAddress);
     event WorkflowStatusChange(WorkflowStatus previousStatus, WorkflowStatus newStatus);
@@ -53,7 +55,7 @@ contract Voting is Ownable {
 
     // Admin
     // Add an address to the whitelist during the "RegisteringVoters" phase
-    function addWhitelist(address _voter) external onlyOwner checkRightWorkflow(WorkflowStatus.RegisteringVoters) {
+    function addWhitelist(address _voter) public onlyOwner checkRightWorkflow(WorkflowStatus.RegisteringVoters) {
         require(whitelist[_voter].isRegistered == false, "This address is already whitelisted");
         whitelist[_voter].isRegistered = true;
         emit VoterRegistered(_voter);

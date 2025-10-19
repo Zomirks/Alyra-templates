@@ -3,16 +3,34 @@ import { network } from "hardhat";
 
 const { ethers } = await network.connect();
 
+async function setUpSmartContract() {
+  const counter = await ethers.deployContract("Counter");
+  const [owner] = await ethers.getSigners();
+  return { counter, owner };
+}
+
+async function setUpAndInc() {
+  let counter : any;
+  let owner : any;
+  ({ counter, owner } = await setUpSmartContract());
+  await counter.inc();
+  return { counter, owner };
+}
+
 describe("Counter contract", function () {
   describe.only("Test Simple", function () {
-    it("Should deploy with x = 0", async function () {
-      const counter = await ethers.deployContract("Counter");
+    let counter : any;
+    let owner : any;
 
+    beforeEach(async () => {
+      ({ counter, owner } = await setUpSmartContract());
+    });
+
+    it("Should deploy with x = 0", async function () {
       expect(await counter.x()).to.equal(0n);
     });
 
     it("inc() should increment x = 1", async function () {
-      const counter = await ethers.deployContract("Counter");
       console.log("X value before increment:", await counter.x());
       await counter.inc();
       console.log("X value after increment:", await counter.x());
@@ -20,15 +38,12 @@ describe("Counter contract", function () {
     });
 
     it("Should revert on triple inc()", async function () {
-      const counter = await ethers.deployContract("Counter");
       await counter.inc();
       await counter.inc();
       await expect(counter.inc()).to.be.revertedWith("Counter: x cannot be more than 2");
     });
 
     it("Should emit the Increment event when calling the inc() function", async function () {
-      const counter = await ethers.deployContract("Counter");
-
       await expect(counter.inc()).to.emit(counter, "Increment").withArgs(1n);
     });
   });

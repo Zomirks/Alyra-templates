@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { network } from "hardhat";
 
-const { ethers } = await network.connect();
+const { ethers, networkHelpers } = await network.connect();
 
 async function setUpSmartContract() {
   const counter = await ethers.deployContract("Counter");
@@ -20,7 +20,7 @@ async function setUpAndInc() {
 
 
 describe("Counter contract", function () {
-  describe.only("Tests Simples", function () {
+  describe("Tests tel fonction", function () {
     let counter : any;
     let owner : any;
 
@@ -37,7 +37,24 @@ describe("Counter contract", function () {
       expect(await counter.x()).to.equal(1n);
     });
 
-      it("should revert on triple inc", async function () {
+    it("get storage at 1", async function () {
+      await counter.inc();
+      expect(await ethers.provider.getStorage(counter.target, 0)).to.equal(1n);
+    });
+
+    it.only("get storage de ma balance", async function () {
+      await counter.inc();
+      const calculslot = ethers.keccak256(
+        ethers.AbiCoder.defaultAbiCoder().encode(
+          ["address", "uint256"],
+          [owner.address, 1n],
+        ),
+      );
+      expect(await ethers.provider.getStorage(counter.target, calculslot)).to.equal(100n);
+    });
+
+
+    it("should revert on triple inc", async function () {
       await counter.inc();
       await counter.inc();
       await expect(counter.inc()).to.be.revertedWith("pas trop haut");
@@ -47,8 +64,32 @@ describe("Counter contract", function () {
     it("Should emit the Increment event when calling the inc() function", async function () {
       await expect(counter.inc()).to.emit(counter, "Increment").withArgs(1n);
     });
+
+    it("Should get blocknumber", async function () {
+      const blocknumber = await ethers.provider.getBlockNumber();
+      await counter.putBlockNumber(blocknumber);
+      expect(await counter.blocknumber()).to.equal(blocknumber);
+    });
+
+    it("Should increment blocknumber", async function () {
+      const blocknumber = await ethers.provider.getBlockNumber();
+      console.log("Current block number:", blocknumber);
+      //const testblocknumber = await ethers.provider.getBlockNumber();
+      //console.log("Current block number:", testblocknumber);
+      
+      await counter.putBlockNumber(blocknumber);
+      expect(await counter.blocknumber()).to.equal(blocknumber);
+  
+      await networkHelpers.mine(5);      
+      const newblocknumber = await ethers.provider.getBlockNumber();
+      console.log("new block number:", newblocknumber);
+
+      await counter.putBlockNumber(newblocknumber);
+      expect(await counter.blocknumber()).to.equal(blocknumber + 6);
+    });
+
   });
-  describe("Test Complexe", function () {
+  describe("Complexe fonction", function () {
     it("The sum of the Increment events should match the current value", async function () {
       const counter = await ethers.deployContract("Counter");
       const deploymentBlockNumber = await ethers.provider.getBlockNumber();

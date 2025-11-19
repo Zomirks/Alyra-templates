@@ -64,7 +64,7 @@ contract Alyra is ERC721, ERC721Enumerable, Ownable {
     function isWhitelisted(address _account, bytes32[] calldata _proof) internal view returns(bool) {
         // Calcul de la feuille de l'arbre (double hashage pour correspondre à StandardMerkleTree)
         bytes32 leaf = keccak256(abi.encode(keccak256(abi.encode(_account))));
-        //*** à compléter ***//
+        return MerkleProof.verify(_proof, merkleRoot, leaf);
     }
 
     // ========================================================================

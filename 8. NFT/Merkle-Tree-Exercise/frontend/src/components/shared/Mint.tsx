@@ -34,10 +34,10 @@ const Mint = () => {
     useEffect(() => {
         if(isConnected && address) {
             try {
-                //*** à compléter ***//
+                const tree = StandardMerkleTree.of(whitelisted, ["address"]);
                 const racine = tree.root;
-                console.log(`Racine de l'arbre de Merkle : ${racine}`)
-                //*** à compléter ***//
+                console.log(`Racine de l'arbre de Merkle : ${racine}`);
+                const proof = tree.getProof([address]);
                 setMerkleProof(proof);
             }
             catch {
